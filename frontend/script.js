@@ -1,17 +1,12 @@
-const buttons = document.querySelectorAll(".product button");
+const productsContainer = document.querySelector(".products");
 const cartCount = document.getElementById("cart-count");
 const backendTest = document.getElementById("backend-test");
 const backendResult = document.getElementById("backend-result");
 
 let count = 0;
 
-buttons.forEach(function(button) {
-    button.addEventListener("click", function() {
-        count++;
-        cartCount.textContent = count;
-    });
-});
 
+// Test backend connection
 backendTest.addEventListener("click", function() {
     fetch("http://127.0.0.1:5000/api/health")
         .then(function(response) {
@@ -20,7 +15,46 @@ backendTest.addEventListener("click", function() {
         .then(function(data) {
             backendResult.textContent = data;
         })
-        .catch(function(error) {
+        .catch(function() {
             backendResult.textContent = "Backend connection failed.";
         });
 });
+
+
+// Load products from backend
+fetch("http://127.0.0.1:5000/api/products")
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(products) {
+
+        productsContainer.innerHTML = "";
+
+        products.forEach(function(product) {
+
+            const productCard = document.createElement("div");
+
+            productCard.classList.add("product");
+
+            productCard.innerHTML = `
+                <h3>${product.name}</h3>
+                <p>₹${product.price}</p>
+                <p>${product.description}</p>
+                <button>Add to Cart</button>
+            `;
+
+            productsContainer.appendChild(productCard);
+
+            const button = productCard.querySelector("button");
+
+            button.addEventListener("click", function() {
+                count++;
+                cartCount.textContent = count;
+            });
+
+        });
+
+    })
+    .catch(function(error) {
+        console.error("Error loading products:", error);
+    });
